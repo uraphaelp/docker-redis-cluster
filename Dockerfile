@@ -7,10 +7,27 @@ LABEL maintainer="Johan Andersson <Grokzen@gmail.com>"
 ENV HOME /root
 ENV DEBIAN_FRONTEND noninteractive
 
+
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak && \
+    echo "deb http://apt.x.netease.com:8660/debian/ stretch main non-free contrib" > /etc/apt/sources.list && \
+    echo "deb http://apt.x.netease.com:8660/debian/ stretch-updates main non-free contrib" >> /etc/apt/sources.list && \
+
+    echo "deb-src http://apt.x.netease.com:8660/debian/ stretch main non-free contrib" >> /etc/apt/sources.list && \
+    echo "deb-src http://apt.x.netease.com:8660/debian/ stretch-updates main non-free contrib" >> /etc/apt/sources.list && \
+    echo "deb http://apt.x.netease.com:8660/debian-security/ stretch/updates main non-free contrib" >> /etc/apt/sources.list && \
+    echo "deb-src http://apt.x.netease.com:8660/debian-security/ stretch/updates main non-free contrib" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian stretch main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian stretch main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian stretch-updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian stretch-updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security stretch/updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian-security stretch/updates main contrib non-free" >> /etc/apt/sources.list
+
+
 # Install system dependencies
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -yqq \
-      net-tools supervisor ruby rubygems locales gettext-base wget && \
+      net-tools supervisor ruby rubygems locales gettext-base wget curl && \
     apt-get clean -yqq
 
 # # Ensure UTF-8 lang and locale
@@ -21,7 +38,13 @@ ENV LC_ALL     en_US.UTF-8
 # Necessary for gem installs due to SHA1 being weak and old cert being revoked
 ENV SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
 
-RUN gem install redis -v 4.0.2
+COPY ./redis-4.0.2.gem ./redis-4.0.2.gem
+RUN gem install --local ./redis-4.0.2.gem
+# RUN gem install redis -v 4.0.2
+# RUN mkdir -p /var/lib/gems/2.3.0/cache && \
+#    wget https://rubygems.org/downloads/redis-4.0.2.gem -o /var/lib/gems/2.3.0/cache/redis-4.0.2.gem && \
+#    gem install --local /var/lib/gems/2.3.0/cache/redis-4.0.2.gem
+
 
 RUN apt-get install -y gcc make g++ build-essential libc6-dev tcl git supervisor ruby
 
