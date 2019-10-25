@@ -1,0 +1,224 @@
+ -- IP Before trim: '172.17.0.2 '
+ -- IP Before split: '172.17.0.2'
+ -- IP After trim: '172.17.0.2'
+7000 7005
+here we are in cluster
+here we are in cluster
+here we are in cluster
+here we are in cluster
+here we are in cluster
+here we are in cluster
+Using redis-cli to create the cluster
+>>> Performing hash slots allocation on 6 nodes...
+Master[0] -> Slots 0 - 5460
+Master[1] -> Slots 5461 - 10922
+Master[2] -> Slots 10923 - 16383
+Adding replica 172.17.0.2:7004 to 172.17.0.2:7000
+Adding replica 172.17.0.2:7005 to 172.17.0.2:7001
+Adding replica 172.17.0.2:7003 to 172.17.0.2:7002
+>>> Trying to optimize slaves allocation for anti-affinity
+[WARNING] Some slaves are in the same host as their master
+M: 4d6303fceea21101c14d168e57c41be1a4b20b87 172.17.0.2:7000
+   slots:[0-5460] (5461 slots) master
+M: c341842e1984ff2cd977d9bf884632a103fa1afb 172.17.0.2:7001
+   slots:[5461-10922] (5462 slots) master
+M: cec22f7d19ac77b68a42a80e34899d096ee9f917 172.17.0.2:7002
+   slots:[10923-16383] (5461 slots) master
+S: 841e172d9f7dd742f2662bc66eaf887a3e415c39 172.17.0.2:7003
+   replicates 4d6303fceea21101c14d168e57c41be1a4b20b87
+S: d31098ae467c593b90ffab3e03e4ff59cc4a43ec 172.17.0.2:7004
+   replicates c341842e1984ff2cd977d9bf884632a103fa1afb
+S: 857095f12000699083909192d2184203e5e1409c 172.17.0.2:7005
+   replicates cec22f7d19ac77b68a42a80e34899d096ee9f917
+Can I set the above configuration? (type 'yes' to accept): >>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join
+...
+>>> Performing Cluster Check (using node 172.17.0.2:7000)
+M: 4d6303fceea21101c14d168e57c41be1a4b20b87 172.17.0.2:7000
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: 841e172d9f7dd742f2662bc66eaf887a3e415c39 172.17.0.2:7003
+   slots: (0 slots) slave
+   replicates 4d6303fceea21101c14d168e57c41be1a4b20b87
+S: 857095f12000699083909192d2184203e5e1409c 172.17.0.2:7005
+   slots: (0 slots) slave
+   replicates cec22f7d19ac77b68a42a80e34899d096ee9f917
+S: d31098ae467c593b90ffab3e03e4ff59cc4a43ec 172.17.0.2:7004
+   slots: (0 slots) slave
+   replicates c341842e1984ff2cd977d9bf884632a103fa1afb
+M: cec22f7d19ac77b68a42a80e34899d096ee9f917 172.17.0.2:7002
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+M: c341842e1984ff2cd977d9bf884632a103fa1afb 172.17.0.2:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+==> /var/log/supervisor/redis-1.log <==
+44:M 25 Oct 2019 06:51:10.565 * No cluster configuration found, I'm 4d6303fceea21101c14d168e57c41be1a4b20b87
+44:M 25 Oct 2019 06:51:10.590 * Running mode=cluster, port=7000.
+44:M 25 Oct 2019 06:51:10.590 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+44:M 25 Oct 2019 06:51:10.590 # Server initialized
+44:M 25 Oct 2019 06:51:10.590 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+44:M 25 Oct 2019 06:51:10.590 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+44:M 25 Oct 2019 06:51:10.590 * Ready to accept connections
+44:M 25 Oct 2019 06:51:12.575 # configEpoch set to 1 via CLUSTER SET-CONFIG-EPOCH
+44:M 25 Oct 2019 06:51:12.588 # IP address for this node updated to 172.17.0.2
+44:M 25 Oct 2019 06:51:13.562 # Cluster state changed: ok
+
+==> /var/log/supervisor/redis-2.log <==
+46:M 25 Oct 2019 06:51:10.567 * No cluster configuration found, I'm c341842e1984ff2cd977d9bf884632a103fa1afb
+46:M 25 Oct 2019 06:51:10.583 * Running mode=cluster, port=7001.
+46:M 25 Oct 2019 06:51:10.583 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+46:M 25 Oct 2019 06:51:10.583 # Server initialized
+46:M 25 Oct 2019 06:51:10.583 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+46:M 25 Oct 2019 06:51:10.583 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+46:M 25 Oct 2019 06:51:10.583 * Ready to accept connections
+46:M 25 Oct 2019 06:51:12.576 # configEpoch set to 2 via CLUSTER SET-CONFIG-EPOCH
+46:M 25 Oct 2019 06:51:12.597 # IP address for this node updated to 172.17.0.2
+46:M 25 Oct 2019 06:51:15.507 # Cluster state changed: ok
+
+==> /var/log/supervisor/redis-3.log <==
+45:M 25 Oct 2019 06:51:10.563 * No cluster configuration found, I'm cec22f7d19ac77b68a42a80e34899d096ee9f917
+45:M 25 Oct 2019 06:51:10.591 * Running mode=cluster, port=7002.
+45:M 25 Oct 2019 06:51:10.591 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+45:M 25 Oct 2019 06:51:10.591 # Server initialized
+45:M 25 Oct 2019 06:51:10.591 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+45:M 25 Oct 2019 06:51:10.591 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+45:M 25 Oct 2019 06:51:10.591 * Ready to accept connections
+45:M 25 Oct 2019 06:51:12.577 # configEpoch set to 3 via CLUSTER SET-CONFIG-EPOCH
+45:M 25 Oct 2019 06:51:12.698 # IP address for this node updated to 172.17.0.2
+45:M 25 Oct 2019 06:51:12.799 # Cluster state changed: ok
+
+==> /var/log/supervisor/redis-4.log <==
+42:M 25 Oct 2019 06:51:10.593 * Running mode=cluster, port=7003.
+42:M 25 Oct 2019 06:51:10.593 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+42:M 25 Oct 2019 06:51:10.593 # Server initialized
+42:M 25 Oct 2019 06:51:10.593 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+42:M 25 Oct 2019 06:51:10.593 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+42:M 25 Oct 2019 06:51:10.593 * Ready to accept connections
+42:M 25 Oct 2019 06:51:12.577 # configEpoch set to 4 via CLUSTER SET-CONFIG-EPOCH
+42:M 25 Oct 2019 06:51:12.697 # IP address for this node updated to 172.17.0.2
+42:S 25 Oct 2019 06:51:16.589 * Before turning into a replica, using my master parameters to synthesize a cached master: I may be able to synchronize with the new master with just a partial transfer.
+42:S 25 Oct 2019 06:51:16.590 # Cluster state changed: ok
+
+==> /var/log/supervisor/redis-5.log <==
+41:M 25 Oct 2019 06:51:10.581 * Ready to accept connections
+41:M 25 Oct 2019 06:51:12.577 # configEpoch set to 5 via CLUSTER SET-CONFIG-EPOCH
+41:M 25 Oct 2019 06:51:12.596 # IP address for this node updated to 172.17.0.2
+41:S 25 Oct 2019 06:51:16.591 * Before turning into a replica, using my master parameters to synthesize a cached master: I may be able to synchronize with the new master with just a partial transfer.
+41:S 25 Oct 2019 06:51:16.591 # Cluster state changed: ok
+41:S 25 Oct 2019 06:51:16.603 * Connecting to MASTER 172.17.0.2:7001
+41:S 25 Oct 2019 06:51:16.603 * MASTER <-> REPLICA sync started
+41:S 25 Oct 2019 06:51:16.604 * Non blocking connect for SYNC fired the event.
+41:S 25 Oct 2019 06:51:16.606 * Master replied to PING, replication can continue...
+41:S 25 Oct 2019 06:51:16.606 * Trying a partial resynchronization (request 36f5e26276c7e39ab5392e4ad3f68d0a8797c94f:1).
+
+==> /var/log/supervisor/redis-6.log <==
+43:M 25 Oct 2019 06:51:10.591 * Running mode=cluster, port=7005.
+43:M 25 Oct 2019 06:51:10.591 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+43:M 25 Oct 2019 06:51:10.591 # Server initialized
+43:M 25 Oct 2019 06:51:10.591 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+43:M 25 Oct 2019 06:51:10.591 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+43:M 25 Oct 2019 06:51:10.591 * Ready to accept connections
+43:M 25 Oct 2019 06:51:12.578 # configEpoch set to 6 via CLUSTER SET-CONFIG-EPOCH
+43:M 25 Oct 2019 06:51:12.698 # IP address for this node updated to 172.17.0.2
+43:S 25 Oct 2019 06:51:16.592 * Before turning into a replica, using my master parameters to synthesize a cached master: I may be able to synchronize with the new master with just a partial transfer.
+43:S 25 Oct 2019 06:51:16.592 # Cluster state changed: ok
+
+==> /var/log/supervisor/redis-2.log <==
+46:M 25 Oct 2019 06:51:16.606 * Replica 172.17.0.2:7004 asks for synchronization
+46:M 25 Oct 2019 06:51:16.606 * Partial resynchronization not accepted: Replication ID mismatch (Replica asked for '36f5e26276c7e39ab5392e4ad3f68d0a8797c94f', my replication IDs are '1aadbfbaa207c88eda88cdf9a0e6b4282b382dfe' and '0000000000000000000000000000000000000000')
+46:M 25 Oct 2019 06:51:16.606 * Starting BGSAVE for SYNC with target: disk
+46:M 25 Oct 2019 06:51:16.607 * Background saving started by pid 71
+
+==> /var/log/supervisor/redis-1.log <==
+44:M 25 Oct 2019 06:51:16.620 * Replica 172.17.0.2:7003 asks for synchronization
+44:M 25 Oct 2019 06:51:16.620 * Partial resynchronization not accepted: Replication ID mismatch (Replica asked for '4f33478794a57e376f8e21519fba7057c61f3e63', my replication IDs are 'ff785f95d6b867955b14b3a8d47cc94af6cc1b4b' and '0000000000000000000000000000000000000000')
+44:M 25 Oct 2019 06:51:16.621 * Starting BGSAVE for SYNC with target: disk
+44:M 25 Oct 2019 06:51:16.621 * Background saving started by pid 72
+72:C 25 Oct 2019 06:51:16.637 * DB saved on disk
+72:C 25 Oct 2019 06:51:16.637 * RDB: 0 MB of memory used by copy-on-write
+44:M 25 Oct 2019 06:51:16.709 * Background saving terminated with success
+44:M 25 Oct 2019 06:51:16.710 * Synchronization with replica 172.17.0.2:7003 succeeded
+
+==> /var/log/supervisor/redis-2.log <==
+71:C 25 Oct 2019 06:51:16.622 * DB saved on disk
+71:C 25 Oct 2019 06:51:16.622 * RDB: 0 MB of memory used by copy-on-write
+46:M 25 Oct 2019 06:51:16.710 * Background saving terminated with success
+46:M 25 Oct 2019 06:51:16.710 * Synchronization with replica 172.17.0.2:7004 succeeded
+
+==> /var/log/supervisor/redis-3.log <==
+45:M 25 Oct 2019 06:51:16.628 * Replica 172.17.0.2:7005 asks for synchronization
+45:M 25 Oct 2019 06:51:16.628 * Partial resynchronization not accepted: Replication ID mismatch (Replica asked for 'd3e1736759b071f0e57aa770fc472f9928ffcd88', my replication IDs are '14670052f91b327f1839fe1c5cfd0a0b82eeb7b2' and '0000000000000000000000000000000000000000')
+45:M 25 Oct 2019 06:51:16.628 * Starting BGSAVE for SYNC with target: disk
+45:M 25 Oct 2019 06:51:16.628 * Background saving started by pid 73
+73:C 25 Oct 2019 06:51:16.644 * DB saved on disk
+73:C 25 Oct 2019 06:51:16.645 * RDB: 0 MB of memory used by copy-on-write
+45:M 25 Oct 2019 06:51:16.727 * Background saving terminated with success
+45:M 25 Oct 2019 06:51:16.727 * Synchronization with replica 172.17.0.2:7005 succeeded
+
+==> /var/log/supervisor/redis-4.log <==
+42:S 25 Oct 2019 06:51:16.618 * Connecting to MASTER 172.17.0.2:7000
+42:S 25 Oct 2019 06:51:16.618 * MASTER <-> REPLICA sync started
+42:S 25 Oct 2019 06:51:16.619 * Non blocking connect for SYNC fired the event.
+42:S 25 Oct 2019 06:51:16.619 * Master replied to PING, replication can continue...
+42:S 25 Oct 2019 06:51:16.620 * Trying a partial resynchronization (request 4f33478794a57e376f8e21519fba7057c61f3e63:1).
+42:S 25 Oct 2019 06:51:16.622 * Full resync from master: 4bc5ad4b856fba7c4e54e624ac8d4018a3274ad1:0
+42:S 25 Oct 2019 06:51:16.622 * Discarding previously cached master state.
+42:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: receiving 175 bytes from master
+42:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: Flushing old data
+42:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: Loading DB in memory
+42:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: Finished with success
+42:S 25 Oct 2019 06:51:16.711 * Background append only file rewriting started by pid 74
+42:S 25 Oct 2019 06:51:16.739 * AOF rewrite child asks to stop sending diffs.
+74:C 25 Oct 2019 06:51:16.739 * Parent agreed to stop sending diffs. Finalizing AOF...
+74:C 25 Oct 2019 06:51:16.739 * Concatenating 0.00 MB of AOF diff received from parent.
+74:C 25 Oct 2019 06:51:16.739 * SYNC append only file rewrite performed
+74:C 25 Oct 2019 06:51:16.740 * AOF rewrite: 0 MB of memory used by copy-on-write
+42:S 25 Oct 2019 06:51:16.819 * Background AOF rewrite terminated with success
+42:S 25 Oct 2019 06:51:16.819 * Residual parent diff successfully flushed to the rewritten AOF (0.00 MB)
+42:S 25 Oct 2019 06:51:16.820 * Background AOF rewrite finished successfully
+
+==> /var/log/supervisor/redis-5.log <==
+41:S 25 Oct 2019 06:51:16.607 * Full resync from master: 8e4dafa077cf452c38b94c8a84453022498f947c:0
+41:S 25 Oct 2019 06:51:16.607 * Discarding previously cached master state.
+41:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: receiving 175 bytes from master
+41:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: Flushing old data
+41:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: Loading DB in memory
+41:S 25 Oct 2019 06:51:16.710 * MASTER <-> REPLICA sync: Finished with success
+41:S 25 Oct 2019 06:51:16.711 * Background append only file rewriting started by pid 75
+41:S 25 Oct 2019 06:51:16.739 * AOF rewrite child asks to stop sending diffs.
+75:C 25 Oct 2019 06:51:16.739 * Parent agreed to stop sending diffs. Finalizing AOF...
+75:C 25 Oct 2019 06:51:16.739 * Concatenating 0.00 MB of AOF diff received from parent.
+75:C 25 Oct 2019 06:51:16.741 * SYNC append only file rewrite performed
+75:C 25 Oct 2019 06:51:16.741 * AOF rewrite: 0 MB of memory used by copy-on-write
+41:S 25 Oct 2019 06:51:16.805 * Background AOF rewrite terminated with success
+41:S 25 Oct 2019 06:51:16.805 * Residual parent diff successfully flushed to the rewritten AOF (0.00 MB)
+41:S 25 Oct 2019 06:51:16.806 * Background AOF rewrite finished successfully
+
+==> /var/log/supervisor/redis-6.log <==
+43:S 25 Oct 2019 06:51:16.627 * Connecting to MASTER 172.17.0.2:7002
+43:S 25 Oct 2019 06:51:16.627 * MASTER <-> REPLICA sync started
+43:S 25 Oct 2019 06:51:16.627 * Non blocking connect for SYNC fired the event.
+43:S 25 Oct 2019 06:51:16.628 * Master replied to PING, replication can continue...
+43:S 25 Oct 2019 06:51:16.628 * Trying a partial resynchronization (request d3e1736759b071f0e57aa770fc472f9928ffcd88:1).
+43:S 25 Oct 2019 06:51:16.629 * Full resync from master: 1227eab377f2eafad383c63d352314e61004ad77:0
+43:S 25 Oct 2019 06:51:16.629 * Discarding previously cached master state.
+43:S 25 Oct 2019 06:51:16.727 * MASTER <-> REPLICA sync: receiving 175 bytes from master
+43:S 25 Oct 2019 06:51:16.728 * MASTER <-> REPLICA sync: Flushing old data
+43:S 25 Oct 2019 06:51:16.728 * MASTER <-> REPLICA sync: Loading DB in memory
+43:S 25 Oct 2019 06:51:16.728 * MASTER <-> REPLICA sync: Finished with success
+43:S 25 Oct 2019 06:51:16.728 * Background append only file rewriting started by pid 76
+43:S 25 Oct 2019 06:51:16.757 * AOF rewrite child asks to stop sending diffs.
+76:C 25 Oct 2019 06:51:16.758 * Parent agreed to stop sending diffs. Finalizing AOF...
+76:C 25 Oct 2019 06:51:16.758 * Concatenating 0.00 MB of AOF diff received from parent.
+76:C 25 Oct 2019 06:51:16.759 * SYNC append only file rewrite performed
+76:C 25 Oct 2019 06:51:16.760 * AOF rewrite: 0 MB of memory used by copy-on-write
+43:S 25 Oct 2019 06:51:16.827 * Background AOF rewrite terminated with success
+43:S 25 Oct 2019 06:51:16.827 * Residual parent diff successfully flushed to the rewritten AOF (0.00 MB)
+43:S 25 Oct 2019 06:51:16.827 * Background AOF rewrite finished successfully

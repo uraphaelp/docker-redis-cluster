@@ -48,14 +48,13 @@ if [ "$1" = 'redis-cluster' ]; then
         rm /redis-data/${port}/nodes.conf
       fi
 
-      #if [ -e /redis-data/${port}/dump.rdb ]; then
-      #  rm /redis-data/${port}/dump.rdb
-      #fi
+      if [ -e /redis-data/${port}/dump.rdb ]; then
+        rm /redis-data/${port}/dump.rdb
+      fi
 
-      #if [ -e /redis-data/${port}/appendonly.aof ]; then
-      #  rm /redis-data/${port}/appendonly.aof
-      #fi
-
+      if [ -e /redis-data/${port}/appendonly.aof ]; then
+        rm /redis-data/${port}/appendonly.aof
+      fi
       # 创建数据节点配置文件
       if [ "$STANDALONE" = "true" -o "$SENTINEL" = "true" ]; then
         PORT=${port} envsubst < /redis-conf/redis.tmpl > /redis-conf/${port}/redis.conf

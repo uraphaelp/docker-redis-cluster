@@ -12,8 +12,6 @@ services:
       context: .
       args:
         redis_version: '5.0.5'
-    volumes:
-      - ./test-data:/redis-data/data
     hostname: server
     ports:
       - '7000-7050:7000-7050'
