@@ -1,234 +1,78 @@
-# docker-redis-cluster
+# *docker* 化 *redis* 集群
 
-[![Docker Stars](https://img.shields.io/docker/stars/grokzen/redis-cluster.svg)](https://hub.docker.com/r/grokzen/redis-cluster/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/grokzen/redis-cluster.svg)](https://hub.docker.com/r/grokzen/redis-cluster/)
-[![Build Status](https://travis-ci.org/Grokzen/docker-redis-cluster.svg?branch=master)](https://travis-ci.org/Grokzen/docker-redis-cluster)
+[项目地址](https://github.com/uraphaelp/docker-redis-cluster/tree/develop)
+[原始项目地址](https://github.com/Grokzen/docker-redis-cluster)
 
-Docker image with redis built and installed from source and a cluster is built.
-
-
-## What this repo and container IS
-
-This repo exists as a resource to make it quick and simple to get a redis cluster up and running with no fuzz or issues with mininal effort. The primary use for this container is to get a cluster up and running in no time that you can use for demo/presentation/development. It is not intended or built for anything else.
-
-I also aim to have every single release of redis that supports a cluster available for use so you can run the exact version you want.
-
-I personally use this to develop redis cluster client code https://github.com/Grokzen/redis-py-cluster
-
-
-## What this repo and container IS NOT
-
-This container that i have built is not supposed to be some kind of production container or one that is used within any envrionment other then running locally on your machine. It is not ment to be run on kubernetes or in any other prod/stage/test/dev envrionment as a fully working commponent in that envrionment. If that works for you and your use-case then awesome. But this container will not change to fit any other primary solution then to be used locally on your machine.
-
-If you are looking for something else or some production quality or kubernetes compatible solution then you are looking in the wrong repo. There is other projects or forks of this repo that is compatible for that situation/solution.
-
-For all other purposes other then what has been stated you are free to fork and/or rebuild this container using it as a template for what you need.
-
-
-## Redis instances inside the container
-
-The cluster is 6 redis instances running with 3 master & 3 slaves, one slave for each master. They run on ports 7000 to 7005.
-
-If the flag `-e "STANDALONE=true"` is passed there is 2 standalone instances runnin on port 7006 and 7007.
-
-If the flag `-e "SENTINEL=true"` is passed there are 3 Sentinel nodes running on ports 5000 to 5002 matching cluster's master instances.
-
-
-This image requires at least `Docker` version 1.10 but the latest version is recommended.
-
-
-
-# Important for Mac users
-
-If you are using this container to run a redis cluster on your mac computer, then you need to configure the container to use another IP address for cluster discovery as it can't use the default discovery IP that is hardcoded into the container.
-
-If you are using the docker-compose file to build the container, then you must export a envrionment variable on your machine before building the container.
-
-```
-# This will make redis do cluster discovery and bind all nodes to ip 127.0.0.1 internally
-
-export REDIS_CLUSTER_IP=0.0.0.0
-```
-
-If you are downloading the container from dockerhub, you must add the internal IP envrionment variable to your `docker run` command.
-
-```
-docker run  -e "IP=0.0.0.0" grokzen/redis-cluster:latest ...
-```
-
-
-
-# Usage
-
-To build your own image run:
+## 快速/自动构建
+构建镜像：
 
     make build
+这将启动一个基本的 cluster 镜像，为你拷贝各种类型的配置文件，设置环境变量等；
+后续的各种类型容器均可以基于该镜像生成
 
-To run the container run:
+启动容器：
 
     make up
+这将调用 `docker-compose up` 指令创建一个默认的 6 节点(3主3从) cluster 容器；并对外映射 7000-7005 端口
+将 **docker-compose.yml** 文件中对应的集群类型，修改为 `true` 能够创建不同的集群：
+其中：
 
-To stop the container run:
+* `STANDALONE`： 创建一个单点类型
+* `SENTINEL`： 创建一个默认的 sentinel 类型(1主2从，3 sentinels)
+
+停止容器：
 
     make down
+  
+ compose file 参数说明：
 
-To connect to your cluster you can use the redis-cli tool:
+* `IP`：集群 IP；默认将自动通过 `hostname -I` 获取容器 IP
+* `INITIAL_PORT` ：集群节点的初始端口；默认为7000；非 sentinel 节点将依次递增
+* `MASTERS`：集群 master 数量；其中 cluster 类型为3；sentinel 和 standalone 类型均为1
+* `SLAVES_PER_MASTER`：单个 master 的 slave 数量；其中 cluster 类型为1；sentinel 类型为2；standalone 类型为0
 
-    redis-cli -c -p 7000
-
-Or the built redis-cli tool inside the container that will connect to the cluster inside the container
-
-    make cli
-
-
-## Include standalone redis instances
-
-Standalone instances is not enabled by default, but available to use to run 2 standalone redis instances that is not clustered.
-
-If running with plain docker run
-
-    docker run ... -e STANDALONE=true ...
-
-When running with docker-compose, set the envrionment variable on your system `REDIS_USE_STANDALONE=true` and start your container or modify the `docker-compose.yml` file
-
-      version: '2'
-      services:
-        redis-cluster:
-          ...
-        environment:
-          STANDALONE: 'true'
+数据持久化：
 
 
-## Include sentinel instances
+## 通过 *docker* 命令手动构建
 
-Sentinel instances is not enabled by default.
+构建镜像：
 
-If running with plain docker send in `-e SENTINEL=true`.
+* 通过 `docker build Dockerfile` 获得的镜像与通过 `make` 和 `docker-compose build` 完全相同
 
-When running with docker-compose set the environment variable on your system `REDIS_USE_SENTINEL=true` and start your container.
+启动容器：
 
-      version: '2'
-      services:
-        redis-cluster:
-          ...
-        environment:
-          SENTINEL: 'true'
+    docker run -d -p 7000-7001:5000-5001 -e STANDALONE=true -e INITIAL_PORT=5000 -e MASTERS=2 --name=<name> <imageID>
+    
+    # 后台运行一个包含了2个单点 redis 实例的容器：分别跑在 docker 的 5000 和 5001 端口，并将其映射到本地 7000 和 7001 端口
+    # 该容器名为 name  
+ 其他类型启动同理可得
+ 
+ 值得注意的是：可以将命令行多个 `-e` 携带的参数整理在 `env.txt` 的环境变量文件中，替换命令行参数为 `--env-file=env.txt` 即可
 
+数据持久化：
 
-## Change number of nodes
+    docker run -v <本地目录>:<容器内目录>
+本地或容器内部的数据改变都会同步到对方的文件系统中
+值得注意的是：建议不要直接在 Dockerfile 中通过 `VOLUME` 关键字挂载数据卷
 
-Be default, it is going to launch 3 masters with 1 slave per master. This is configurable through a number of environment variables:
+* 每次需要更换本地数据文件路径时，都需要重新构建镜像，效率太低
+* 在镜像中间层导入外部文件，使得构建速度下降，中间层过大
 
-| Environment variable | Default |
-| -------------------- |--------:|
-| `INITIAL_PORT`       |    7000 |
-| `MASTERS`            |       3 |
-| `SLAVES_PER_MASTER`  |       1 | 
+## 项目其他文件说明
 
-Therefore, the total number of nodes (`NODES`) is going to be `$MASTERS * ( $SLAVES_PER_MASTER  + 1 )` and ports are going to range from `$INITIAL_PORT` to `$INITIAL_PORT + NODES - 1`.
+* `./tmpl/*.tmpl`：各种集群类型的配置文件；可以根据需求自行修改（`docker build` 时3种类型的配置文件都会拷贝到镜像中）
 
-At the docker-compose provided by this repository, ports 7000-7050 are already mapped to the hosts'. Either if you need more than 50 nodes in total or if you need to change the initial port number, you should override those values.
+*  Dockerfile：内容已经根据机房网络环境进行了诸如：apt 源，gem 源等的修改；无特殊需求时尽量不要编辑这个文件，否则会导致因网络原因无法构建镜像
 
-Also note that the number of sentinels (if enabled) is the same as the number of masters. The docker-compose file already maps ports 5000-5010 by default. You should also override those values if you have more than 10 masters.
+* docker-entrypoint.sh：指定容器启动时的参数和一些环境变量；建议不要修改，否则有可能导致端口冲突，节点类型生成错误
 
-      version: '2'
-      services:
-        redis-cluster:
-          ...
-        environment:
-          INITIAL_PORT: 9000,
-          MASTERS: 2,
-          SLAVES_PER_MASTER: 2
+* [项目参考地址](https://github.com/Grokzen/docker-redis-cluster)
 
+## 待完成事项
 
-## Build alternative redis versions
+* 暂不支持自定义 sentinel 节点数量，开发中
 
-For a release to be buildable it needs to be present at this url: http://download.redis.io/releases/
+* 暂不支持自定义 sentinel 监控多个主从集群，开发中
 
-
-### docker build
-
-To build a different redis version use the argument `--build-arg` argument.
-
-    # Example plain docker
-    docker build --build-arg redis_version=4.0.13 -t grokzen/redis-cluster .
-
-
-### docker-compose
-
-To build a different redis version use the `--build-arg` argument.
-
-    # Example docker-compose
-    docker-compose build --build-arg "redis_version=4.0.13" redis-cluster
-
-
-
-# Available tags
-
-The following tags with pre-built images is available on `docker-hub`.
-
-Latest release in the most recent stable branch will be used as `latest` version.
-
-- latest == 5.0.5
-
-Redis 5.0.x version:
-
-- 5.0.5
-- 5.0.4
-- 5.0.3
-- 5.0.2
-- 5.0.1
-- 5.0.0
-
-Redis 4.0.x versions:
-
-- 4.0.14
-- 4.0.13
-- 4.0.12
-- 4.0.11
-- 4.0.10
-- 4.0.9
-- 4.0.8
-- 4.0.7
-- 4.0.6
-- 4.0.5
-- 4.0.4
-- 4.0.3
-- 4.0.2
-- 4.0.1
-- 4.0.0
-
-Redis 3.2.x versions:
-
-- 3.2.13
-- 3.2.12
-- 3.2.11
-- 3.2.10
-- 3.2.9
-- 3.2.8
-- 3.2.7
-- 3.2.6
-- 3.2.5
-- 3.2.4
-- 3.2.3
-- 3.2.2
-- 3.2.1
-- 3.2.0
-
-Redis 3.0.x versions:
-
-- 3.0.7
-- 3.0.6
-- 3.0.5
-- 3.0.4
-- 3.0.3
-- 3.0.2
-- 3.0.1
-- 3.0.0
-
-
-# License
-
-This repo is using the MIT LICENSE.
-
-You can find it in the file [LICENSE](LICENSE)
+* 暂不支持一键启动多个 sentinel 类型集群，需要构建一个默认集群后，使用 `docker exec -it <containerID> /bin/bash` 进入容器，手动构建

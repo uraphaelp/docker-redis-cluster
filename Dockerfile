@@ -1,7 +1,7 @@
 # Build from commits based on redis:3.2
 FROM redis@sha256:000339fb57e0ddf2d48d72f3341e47a8ca3b1beae9bdcb25a96323095b72a79b
 
-LABEL maintainer="Johan Andersson <Grokzen@gmail.com>"
+LABEL maintainer="Raphael Zheng <uraphaelp@163.com>"
 
 # Some Environment Variables
 ENV HOME /root
@@ -38,7 +38,7 @@ ENV LC_ALL     en_US.UTF-8
 # Necessary for gem installs due to SHA1 being weak and old cert being revoked
 ENV SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
 
-COPY ./redis-4.0.2.gem ./redis-4.0.2.gem
+COPY ./tmpl/redis-4.0.2.gem ./redis-4.0.2.gem
 RUN gem install --local ./redis-4.0.2.gem
 # RUN gem install redis -v 4.0.2
 # RUN mkdir -p /var/lib/gems/2.3.0/cache && \
@@ -48,6 +48,7 @@ RUN gem install --local ./redis-4.0.2.gem
 
 RUN apt-get install -y gcc make g++ build-essential libc6-dev tcl git supervisor ruby
 
+# 默认 5.0.5
 ARG redis_version=5.0.5
 
 RUN echo $redis_version > /redis-version.txt
@@ -61,9 +62,9 @@ RUN (cd /redis && make)
 RUN mkdir /redis-conf
 RUN mkdir /redis-data
 
-COPY ./redis-cluster.tmpl /redis-conf/redis-cluster.tmpl
-COPY ./redis.tmpl /redis-conf/redis.tmpl
-COPY ./sentinel.tmpl /redis-conf/sentinel.tmpl
+COPY ./tmpl/redis-cluster.tmpl /redis-conf/redis-cluster.tmpl
+COPY ./tmpl/redis.tmpl /redis-conf/redis.tmpl
+COPY ./tmpl/sentinel.tmpl /redis-conf/sentinel.tmpl
 
 # Add startup script
 COPY ./docker-entrypoint.sh /docker-entrypoint.sh
@@ -73,7 +74,7 @@ COPY ./generate-supervisor-conf.sh /generate-supervisor-conf.sh
 
 RUN chmod 755 /docker-entrypoint.sh
 
-EXPOSE 7000 7001 7002 7003 7004 7005 7006 7007 5000 5001 5002
+EXPOSE 7000 7001 7002 7003 7004 7005 9000 9001 9002
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["redis-cluster"]
