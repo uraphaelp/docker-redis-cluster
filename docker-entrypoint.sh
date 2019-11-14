@@ -62,7 +62,7 @@ if [ "$1" = 'redis-cluster' ]; then
         echo "here we are not in cluster"
       else 
         PORT=${port} envsubst < /redis-conf/redis-cluster.tmpl > /redis-conf/${port}/redis.conf
-        nodes="$nodes $IP:$port"
+        nodes="$nodes 127.0.0.1:$port"
         echo "here we are in cluster"
       fi
         
@@ -80,7 +80,7 @@ if [ "$1" = 'redis-cluster' ]; then
         if [ "$SENTINEL" = "true" ]; then
             NUM=$(($port - $INITIAL_PORT - $MASTERS + 1))
             MASTER_PORT=$(($NUM / $SLAVES_PER_MASTER + $NUM % $SLAVES_PER_MASTER - 1 + $INITIAL_PORT))  
-            echo "slaveof $IP $MASTER_PORT" >> /redis-conf/${port}/redis.conf
+            echo "slaveof 127.0.0.1 $MASTER_PORT" >> /redis-conf/${port}/redis.conf
         fi  
       fi
 
