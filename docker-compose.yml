@@ -11,7 +11,7 @@ services:
     build:
       context: .
       args:
-        redis_version: '4.0.14'
+        redis_version: '5.0.5'
         # volumes:
         #  - ./test-data:/redis-data/data
     hostname: server
