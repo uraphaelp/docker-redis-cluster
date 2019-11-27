@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ "$1" = 'redis-cluster' ]; then
+if [ "$1" = 'redis-up' ]; then
     # Allow passing in cluster IP by argument or environmental variable
     IP="${2:-$IP}"
 
@@ -62,7 +62,7 @@ if [ "$1" = 'redis-cluster' ]; then
         echo "here we are not in cluster"
       else 
         PORT=${port} envsubst < /redis-conf/redis-cluster.tmpl > /redis-conf/${port}/redis.conf
-        nodes="$nodes 127.0.0.1:$port"
+        nodes="$nodes $IP:$port"
         echo "here we are in cluster"
       fi
         
@@ -71,7 +71,7 @@ if [ "$1" = 'redis-cluster' ]; then
         if [ "$SENTINEL" = "true" ]; then
             for i in $(seq 0 2); do  
                 id=$(($port + $i))
-                PORT=${port} SENTINEL_PORT=$((port + 2000 + i)) envsubst < /redis-conf/sentinel.tmpl > /redis-conf/sentinel-${id}.conf
+                PORT=${port} SENTINEL_PORT=$((port + 2000 + i)) IP=${IP} envsubst < /redis-conf/sentinel.tmpl > /redis-conf/sentinel-${id}.conf
                 cat /redis-conf/sentinel-${id}.conf
             done
         fi
@@ -80,7 +80,7 @@ if [ "$1" = 'redis-cluster' ]; then
         if [ "$SENTINEL" = "true" ]; then
             NUM=$(($port - $INITIAL_PORT - $MASTERS + 1))
             MASTER_PORT=$(($NUM / $SLAVES_PER_MASTER + $NUM % $SLAVES_PER_MASTER - 1 + $INITIAL_PORT))  
-            echo "slaveof 127.0.0.1 $MASTER_PORT" >> /redis-conf/${port}/redis.conf
+            echo "slaveof $IP $MASTER_PORT" >> /redis-conf/${port}/redis.conf
         fi  
       fi
 
@@ -95,7 +95,7 @@ if [ "$1" = 'redis-cluster' ]; then
     /redis/src/redis-cli --version | grep -E "redis-cli 3.0|redis-cli 3.2|redis-cli 4.0"
 
     # 创建 cluster 类型集群 
-    if [ $? -eq 0 ] && [ -z "$STANDALONE" ] && [-z "$SENTINEL" ]; then
+    if [ $? -eq 0 ] && [ -z "$STANDALONE" ] && [ -z "$SENTINEL" ]; then
       echo "Using old redis-trib.rb to create the cluster"
       echo "yes" | eval ruby /redis/src/redis-trib.rb create --replicas "$SLAVES_PER_MASTER" "$nodes"
     elif [ $? -ne 0 ] && [ -z "$STANDALONE" ] && [ -z "$SENTINEL" ]; then

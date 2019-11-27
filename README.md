@@ -1,78 +1,140 @@
-# *docker* 化 *redis* 集群
+entinel类型、cluster类型
+* 自定义集群参数：节点数量；master 和 slave 数量；服务端口
+* 自定义 redis 配置（redis.conf）文件
+* 容器数据持久化服务：可加载外部数据并在宿舍机上保留容器内部数据
+* 保证非宿主机机器也可访问 redis 容器
+* 不同 redis 版本的镜像：3.2，4.0，5.0（及各大版本的子版本）
+* 无须反复构建镜像：提供基础镜像资源，可根据一次构建的镜像创建不同类型的 redis 集群容器
 
-[项目地址](https://github.com/uraphaelp/docker-redis-cluster/tree/develop)
-[原始项目地址](https://github.com/Grokzen/docker-redis-cluster)
+**项目结构**
 
-## 快速/自动构建
-构建镜像：
+* docker-compose.yml：docker-compose 配置文件。具体配置方法详见下述 *使用 docker-compose 创建集群*
+* docker-entrypoint.sh：容器启动时在内部执行的脚本文件。一般不需要修改
+* Dockerfile：构建镜像的基础文件。一般不需要修改
+* generate-supervisor-conf.sh：supervisor 相关文件。一般不需要修改
+* tmpl：包含 redis, sentinel 和 cluster 类型节点及集群的配置文件。如针对集群有特定需求，可以进行在构建镜像前进行修改
 
-    make build
-这将启动一个基本的 cluster 镜像，为你拷贝各种类型的配置文件，设置环境变量等；
-后续的各种类型容器均可以基于该镜像生成
+### 使用 *docker* 原生命令创建集群
 
-启动容器：
+**构建镜像**
 
-    make up
-这将调用 `docker-compose up` 指令创建一个默认的 6 节点(3主3从) cluster 容器；并对外映射 7000-7005 端口
-将 **docker-compose.yml** 文件中对应的集群类型，修改为 `true` 能够创建不同的集群：
-其中：
+* 镜像将会基于 Dockerfile 打包 generate-supervisor-conf.sh, docker-entrypoint.sh 及 tmpl 文件
+* 使用 `docker build -t <tag_name> --build-arg redis_version=<version> Dockerfile` 命令构建
+    * 使用 `-t <tag_name>` 参数为你创建的镜像打 tag
+    * 使用 `--build-arg redis_version=<version>` 参数选择具体的 redis 版本；默认为5.0.5 
+* 这将会为你创建一个定制了各种集群模式的特定版本 redis 镜像，后续可以通过不同命令或配置文件，创建不同的 redis 集群
 
-* `STANDALONE`： 创建一个单点类型
-* `SENTINEL`： 创建一个默认的 sentinel 类型(1主2从，3 sentinels)
+**启动容器（启动 redis 服务）**
 
-停止容器：
-
-    make down
-  
- compose file 参数说明：
-
-* `IP`：集群 IP；默认将自动通过 `hostname -I` 获取容器 IP
-* `INITIAL_PORT` ：集群节点的初始端口；默认为7000；非 sentinel 节点将依次递增
-* `MASTERS`：集群 master 数量；其中 cluster 类型为3；sentinel 和 standalone 类型均为1
-* `SLAVES_PER_MASTER`：单个 master 的 slave 数量；其中 cluster 类型为1；sentinel 类型为2；standalone 类型为0
-
-数据持久化：
-
-
-## 通过 *docker* 命令手动构建
-
-构建镜像：
-
-* 通过 `docker build Dockerfile` 获得的镜像与通过 `make` 和 `docker-compose build` 完全相同
-
-启动容器：
-
-    docker run -d -p 7000-7001:5000-5001 -e STANDALONE=true -e INITIAL_PORT=5000 -e MASTERS=2 --name=<name> <imageID>
+* 使用 `docker run --name=<NAME> -e <environment_list> <IMAGE_NAME>` 命令创建 
+* 使用 `--name=<NAME>` 参数为你的容器命名
+* 使用 `-e <environment_list>` 通过多参数定制你的集群：
     
-    # 后台运行一个包含了2个单点 redis 实例的容器：分别跑在 docker 的 5000 和 5001 端口，并将其映射到本地 7000 和 7001 端口
-    # 该容器名为 name  
- 其他类型启动同理可得
- 
- 值得注意的是：可以将命令行多个 `-e` 携带的参数整理在 `env.txt` 的环境变量文件中，替换命令行参数为 `--env-file=env.txt` 即可
+    ```
+    # 参数类型：
+    IP：redis 动态调整集群对外服务地址；功能开发中，暂时不要修改
+    STANDALONE：为 true 时创建单实例类型集群
+    SENTINEL：为 true 时创建 sentinel 类型集群
+    MASTERS：集群中 master 节点个数；standalone 和 sentinel 类型默认为1；cluster 类型默认为3
+    SLAVE_PER_MASTER：每个 master 节点的从节点个数；sentinel 类型默认为2；cluster类型默认为1
+    INITIAL_PORT：redis 集群容器内部初始端口；默认为7000；sentinel 节点默认为9000
+    
+    # 不带任何参数：这将会创建一个默认的 cluster 类型，包含3-master，3-slave；同时服务部署在容器内部7000-7005端口
+    docker run <IMAGE_NAME> 
+    # 运行一个单点 redis 服务：
+    docker run --name=<NAME> -e STANDALONE=true <IMAGE_NAME>
+    # 运行一个默认 sentinel 类型（1主2从；3sentinels）集群：
+    docker run --name=<NAME> -e SENTINEL=true <IMAGE_NAME>
+    # 调整主从节点数量：这将创建一个 sentinel 类型集群，其中包含2个 master；每个 master 1个 slave；同时3个 sentinel 节点 
+    docker run --name=<NAME> -e SENTINEL=true MASTERS=2 SLAVE_PER_MASTER=1 <IMAGE_NAME>
 
-数据持久化：
+    # 用配置文件替代命令行输入定制参数
+    编辑好包含上述定制参数的配置文件FILE，如：
+    STANDALONE:true
+    MASTERS:2
+    SLAVES_PER_MASTER:1
+    INITIAL_PORT:5000
+    使用如下命令启动集群:
+    docker run --env-file=FILE <IMAGE_NAME>
+    
+    # 其他 docker 参数
+    -d:容器运行在后台
+    -p <宿主机端口>:<容器内部端口>：端口映射
+    ```
 
-    docker run -v <本地目录>:<容器内目录>
-本地或容器内部的数据改变都会同步到对方的文件系统中
-值得注意的是：建议不要直接在 Dockerfile 中通过 `VOLUME` 关键字挂载数据卷
+**访问 redis 集群**
 
-* 每次需要更换本地数据文件路径时，都需要重新构建镜像，效率太低
-* 在镜像中间层导入外部文件，使得构建速度下降，中间层过大
+* 若未创建端口映射，需要通过 `docker exec -it <NAME> /bin/bash` 进入容器后，再执行 `redis-cli -p <对应端口>` 访问 redis 服务
+* 若创建了端口映射，可以直接在宿主机上执行 `redis-cli -h <对应端口>`
 
-## 项目其他文件说明
+**保证 redis 容器能够从外部访问**
 
-* `./tmpl/*.tmpl`：各种集群类型的配置文件；可以根据需求自行修改（`docker build` 时3种类型的配置文件都会拷贝到镜像中）
+* 当前创建的集群，无论是否开启端口映射，均只能够在宿主机上访问。为了能够在其他机器上访问到我们搭建的 redis 集群，可以通过
 
-*  Dockerfile：内容已经根据机房网络环境进行了诸如：apt 源，gem 源等的修改；无特殊需求时尽量不要编辑这个文件，否则会导致因网络原因无法构建镜像
+    ```
+    docker run -d --network=host --name=<NAME> <IMAGE_NAME>
+    # 这样的方式本质是通过容器共享宿主机网络，达到外部访问的目的
+    ```
 
-* docker-entrypoint.sh：指定容器启动时的参数和一些环境变量；建议不要修改，否则有可能导致端口冲突，节点类型生成错误
+**停止并删除容器**
 
-* [项目参考地址](https://github.com/Grokzen/docker-redis-cluster)
+* 通过：
 
-## 待完成事项
+    ```
+    docker stop <NAME>
+    docker rm <NAME>
+    ```
+    
+**挂载外部数据卷**
 
-* 暂不支持自定义 sentinel 节点数量，开发中
+* 通过：
 
-* 暂不支持自定义 sentinel 监控多个主从集群，开发中
+    ```
+    docker run -v <宿主机目录>:<容器目录> 
+    # 可以挂载本地数据或配置文件
+    ```
 
-* 暂不支持一键启动多个 sentinel 类型集群，需要构建一个默认集群后，使用 `docker exec -it <containerID> /bin/bash` 进入容器，手动构建
+### 使用 *docker-compose* 创建集群
+
+* *docker-compose* 是一个用于快速定制和创建 docker 服务的工具，使用 .yaml 配置文件定义各项服务参数（如挂载数据卷，端口，其他环境变量），避免重复使用复杂的 docker 原生命令，从而更方便快速地构建镜像及创建容器
+* *docker-compose* 的所有操作和指令本质上是读取 .yaml 配置文件，构建相应的镜像或启动容器，因此下述操作描述和 docker 原生指令有异曲同工之处，只作简单叙述
+
+**构建镜像**
+
+* 如果你已经通过 **docker 原生命令构建镜像**，那么可以直接进入下述**启动容器**步骤
+* 编辑 docker-compose.yaml 文件（可以参照**docker 原生命令构建镜像---启动容器** 中 编辑配置文件替代定制参数的部分），执行：
+
+    ```
+    docker-compose build
+    ```
+
+**启动容器**
+
+* 在 docker-compose.yaml 目录下执行：
+
+    ```
+    docker-compose up
+    # 启动容器并进行端口映射
+    ```
+
+**停止服务**
+
+* 在 docker-compose.yaml 目录下执行：
+
+    ```
+    docker-compose stop 
+    ```
+
+### *redis* 相关
+
+**配置文件**
+
+* 为方便快速搭建一个测试集群，导入本地数据，目前在项目配置文件中已加入两项参数：
+
+    ```
+    dir 
+    # 数据存放目录
+    dbfilename
+    # 数据库文件名（rdb 文件）
+    ```
+* 其他更多参数定义和修改请参照：[redis 官方配置文件](http://download.redis.io/redis-stable/redis.conf)
